@@ -985,7 +985,10 @@ itensCarrinhoEl.appendChild(itemEl);
 itensCarrinhoEl.querySelectorAll('.btn-remover').forEach(b=>b.addEventListener('click',removerDoCarrinho));
 }
 valorTotalEl.textContent=`R$ ${total.toFixed(2).replace('.',',')}`;
-contadorCarrinhoEl.textContent=carrinho.reduce((a,i)=>a+i.quantidade,0)function adicionarAoCarrinho(event) {
+contadorCarrinhoEl.textContent=carrinho.reduce((a,i)=>a+i.quantidade,0);
+}
+
+function adicionarAoCarrinho(event) {
     event.preventDefault();
     const btn = event.currentTarget;
     
@@ -1033,10 +1036,7 @@ contadorCarrinhoEl.textContent=carrinho.reduce((a,i)=>a+i.quantidade,0)function 
         btnIniciarPedidoEl.style.display = 'block';
 
     }, 1000); // Delay de 1 segundo
-}const id=parseInt(e.target.dataset.id);
-const nome=e.target.dataset.nome;
-const preco=parseFloat(e.target.dataset.preco);
-const modelo=e.target.dataset.modelo;
+}
 
 const itemExistente=carrinho.find(i=>i.id===id);
 if(itemExistente){
