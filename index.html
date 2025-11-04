@@ -318,31 +318,30 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 .preco{font-size:1.4em;color:var(--vermelho-preco);font-weight:700;margin-bottom:15px;display:block}
 .btn-adicionar{background-color:var(--cor-menu-hover);color:var(--branco);border:none;padding:10px 20px;border-radius:5px;cursor:pointer;font-weight:700;transition:background-color .3s}
 .btn-adicionar:hover{background-color:var(--azul-claro)}
-
-.btn-adicionar.loading {
-    position: relative;
-    color: transparent !important;
-    pointer-events: none;
-}
-
-.btn-adicionar.loading::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 16px;
-    height: 16px;
-    margin-top: -8px;
-    margin-left: -8px;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    border-top-color: transparent;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+	.btn-adicionar.loading {
+	    background-color: #0056b3; /* Cor de carregamento */
+	    cursor: wait;
+	    pointer-events: none; /* Desabilita cliques durante o carregamento */
+	    position: relative;
+	    color: transparent !important; /* Esconde o texto original */
+	}
+	.btn-adicionar.loading::after {
+	    content: "";
+	    position: absolute;
+	    top: 50%;
+	    left: 50%;
+	    width: 16px;
+	    height: 16px;
+	    margin-top: -8px;
+	    margin-left: -8px;
+	    border: 2px solid #fff;
+	    border-top-color: transparent;
+	    border-radius: 50%;
+	    animation: spin 1s linear infinite;
+	}
+	@keyframes spin {
+	    to { transform: rotate(360deg); }
+	}
 .modal{display:none;position:fixed;z-index:1001;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,.4)}
 .modal-content{background-color:var(--branco);margin:10% auto;padding:25px;border-radius:10px;width:90%;max-width:500px;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 .fechar-modal{color:#aaa;float:right;font-size:28px;font-weight:700;cursor:pointer}
@@ -384,7 +383,12 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 .btn-azul-escuro:hover{background-color:#003a7a}
 .texto-centralizado{text-align:center;color:#666;padding:15px 0}
 .mensagem-status{margin-top:10px;text-align:center;font-weight:600}
-
+#notification-snackbar{visibility:hidden;min-width:250px;background-color:#333;color:#fff;text-align:center;border-radius:2px;padding:16px;position:fixed;z-index:10000;left:20px;top:20px;font-size:1em;box-shadow:0 4px 8px rgba(0,0,0,.2)}
+#notification-snackbar.show{visibility:visible;-webkit-animation:fadein .5s,fadeout .5s 3.5s;animation:fadein .5s,fadeout .5s 3.5s}
+@-webkit-keyframes fadein{from{top:0;opacity:0}to{top:20px;opacity:1}}
+@keyframes fadein{from{top:0;opacity:0}to{top:20px;opacity:1}}
+@-webkit-keyframes fadeout{from{top:20px;opacity:1}to{top:0;opacity:0}}
+@keyframes fadeout{from{top:20px;opacity:1}to{top:0;opacity:0}}
 .whatsapp-float{position:fixed;bottom:20px;right:20px;z-index:999}
 .whatsapp-float a{display:flex;align-items:center;background-color:var(--verde-whatsapp);color:var(--branco);padding:10px 15px;border-radius:50px;text-decoration:none;font-weight:700;box-shadow:0 4px 8px rgba(0,0,0,.2);transition:background-color .3s}
 .whatsapp-float a:hover{background-color:#258a10}
@@ -870,7 +874,7 @@ const formularioPedidoEl=document.getElementById('formulario-pedido');
 const btnIniciarPedidoEl=document.getElementById('btn-iniciar-pedido');
 const btnFinalizarWhatsAppEl=document.getElementById('finalizar-whatsapp');
 const mensagemStatusEl=document.getElementById('mensagem-status');
-
+const notificationSnackbarEl=document.getElementById('notification-snackbar');
 const searchInputEl = document.getElementById('search-input'); 
 const bannerSliderEl = document.getElementById('banner-slider'); 
 
@@ -883,7 +887,15 @@ const menuHamburguerEl = document.getElementById('menu-hamburguer');
 const menuMobileContainerEl = document.getElementById('menu-mobile-container');
 const submenuLinks = document.querySelectorAll('#menu-mobile .has-submenu > a');
 
-
+function showNotification(message) {
+    notificationSnackbarEl.classList.remove('show');
+    notificationSnackbarEl.innerHTML = message;
+    notificationSnackbarEl.classList.add('show');
+    
+    setTimeout(() => {
+        notificationSnackbarEl.classList.remove('show');
+    }, 4000); 
+}
 
 function startBannerSlider() {
     // A função de slider só precisa ser executada se o banner estiver visível
@@ -903,8 +915,8 @@ listaProdutosEl.innerHTML=catalogoPecas.map(p=>`
 <h4>${p.nome}</h4>
 <p>Tipo: ${p.modelo}</p>
 <p class="preco">R$ ${p.preco.toFixed(2).replace('.',',')}</p>
-<button class="btn-adicionar btn-mais-detalhes" onclick="abrirDetalhesProdutoModal(${p.id})">
-Mais Detalhes
+<button class="btn-adicionar" data-id="${p.id}" data-nome="${p.nome}" data-preco="${p.preco}" data-modelo="${p.modelo}">
+Adicionar ao Carrinho
 </button>
 </div>
 `).join('');
@@ -976,34 +988,50 @@ valorTotalEl.textContent=`R$ ${total.toFixed(2).replace('.',',')}`;
 contadorCarrinhoEl.textContent=carrinho.reduce((a,i)=>a+i.quantidade,0);
 }
 function adicionarAoCarrinho(e){
-    const button = e.target;
-    const id=parseInt(button.dataset.id);
-    const nome=button.dataset.nome;
-    const preco=parseFloat(button.dataset.preco);
-    const modelo=button.dataset.modelo;
+	e.preventDefault();
+	const btn = e.currentTarget;
+	
+	// 1. Adiciona estado de carregamento e delay
+	btn.classList.add('loading');
+	btn.innerHTML = 'Adicionando...'; // Texto temporário para acessibilidade (o ::after o esconde)
+	
+	setTimeout(() => {
+	    // 2. Lógica de adição ao carrinho
+	    const id=parseInt(btn.dataset.id);
+	    const nome=btn.dataset.nome;
+	    const preco=parseFloat(btn.dataset.preco);
+	    const modelo=btn.dataset.modelo;
+	
+	    const itemExistente=carrinho.find(i=>i.id===id);
+	    if(itemExistente){
+	        itemExistente.quantidade++;
+	    }else{
+	        carrinho.push({id,nome,preco,quantidade:1,modelo});
+	    }
+	    renderizarCarrinho();
+	    
+	    // 3. Abrir o modal do carrinho
+	    modalCarrinhoEl.style.display = 'block';
+	    
+	    // 4. Remove estado de carregamento e restaura o texto
+	    btn.classList.remove('loading');
+	    btn.innerHTML = 'Adicionar ao Carrinho';
+	    
+	}, 500); // Delay de 500ms (meio segundo)
+	}
+const id=parseInt(e.target.dataset.id);
+const nome=e.target.dataset.nome;
+const preco=parseFloat(e.target.dataset.preco);
+const modelo=e.target.dataset.modelo;
 
-    // Adiciona a classe de carregamento
-    button.classList.add('loading');
-    button.disabled = true;
-
-    // Simula um delay de 1 segundo (1000ms)
-    setTimeout(() => {
-        const itemExistente=carrinho.find(i=>i.id===id);
-        if(itemExistente){
-            itemExistente.quantidade++;
-        }else{
-            carrinho.push({id,nome,preco,quantidade:1,modelo});
-        }
-        renderizarCarrinho();
-
-        // Remove a classe de carregamento e reativa o botão
-        button.classList.remove('loading');
-        button.disabled = false;
-
-        // Abre o modal do carrinho
-        modalCarrinhoEl.style.display = 'block';
-
-    }, 1000);
+const itemExistente=carrinho.find(i=>i.id===id);
+if(itemExistente){
+itemExistente.quantidade++;
+}else{
+carrinho.push({id,nome,preco,quantidade:1,modelo});
+}
+renderizarCarrinho();
+// showNotification(`<i class="fas fa-check-circle"></i> ${nome} adicionado ao carrinho!`); // Removido conforme solicitado
 }
 function removerDoCarrinho(e){
 const id=parseInt(e.target.dataset.id);
@@ -1080,7 +1108,7 @@ function abrirDetalhesProdutoModal(produtoId) {
             <h5 style="color: var(--azul-principal); margin-bottom: 10px;">Descrição Detalhada:</h5>
             <p style="margin-bottom: 20px; line-height: 1.5; font-size: 0.95em;">${produto.descricaoCompleta}</p>
             
-            <button class="btn-adicionar" data-id="${produto.id}" data-nome="${produto.nome}" data-preco="${produto.preco}" data-modelo="${produto.modelo}" style="margin-top: 10px;">
+            <button class="btn-adicionar" data-id="${produto.id}" data-nome="${produto.nome}" data-preco="${produto.preco}" data-modelo="${produto.modelo}" style="margin-top: 10px;" onclick="adicionarAoCarrinho(event); fecharDetalhesProdutoModal();">
                 <i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho
             </button>
         `;
@@ -1115,7 +1143,7 @@ function adicionarListenersDetalheProduto() {
 }
 
 function handleCardClick(event) {
-    // Verifica se o clique não foi no botão "Mais Detalhes"
+    // Verifica se o clique não foi no botão "Adicionar ao Carrinho"
     if (!event.target.classList.contains('btn-adicionar') && !event.target.closest('.btn-adicionar')) {
         const produtoId = parseInt(this.getAttribute('data-id'));
         if (!isNaN(produtoId)) {
