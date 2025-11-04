@@ -319,11 +319,11 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 .btn-adicionar{background-color:var(--cor-menu-hover);color:var(--branco);border:none;padding:10px 20px;border-radius:5px;cursor:pointer;font-weight:700;transition:background-color .3s}
 .btn-adicionar:hover{background-color:var(--azul-claro)}
 .btn-adicionar.loading {
-    background-color: #0056b3; /* Cor um pouco mais escura durante o carregamento */
+    background-color: #6c757d; /* Cor de loading */
     cursor: not-allowed;
     position: relative;
-    color: transparent !important; /* Esconde o texto original */
-    pointer-events: none; /* Impede cliques repetidos */
+    color: transparent !important; /* Esconde o texto */
+    pointer-events: none; /* Desabilita cliques */
 }
 .btn-adicionar.loading::after {
     content: "";
@@ -985,42 +985,55 @@ itensCarrinhoEl.appendChild(itemEl);
 itensCarrinhoEl.querySelectorAll('.btn-remover').forEach(b=>b.addEventListener('click',removerDoCarrinho));
 }
 valorTotalEl.textContent=`R$ ${total.toFixed(2).replace('.',',')}`;
-contadorCarrinhoEl.textContent=carrinho.reduce((a,i)=>a+i.quantidade,0);
-}
-function adicionarAoCarrinho(e){
-	const btn = e.target.closest('.btn-adicionar');
-	if (btn.classList.contains('loading')) return; // Previne clique duplo
-	
-	btn.classList.add('loading');
-	btn.innerHTML = 'Adicionando...'; // Texto temporário (será substituído pelo spinner)
+contadorCarrinhoEl.textContent=carrinho.reduce((a,i)=>a+i.quantidade,0)function adicionarAoCarrinho(event) {
+    event.preventDefault();
+    const btn = event.currentTarget;
+    
+    // 1. Adiciona o estado de loading e desabilita o botão
+    btn.classList.add('loading');
+    
+    // 2. Simula o delay de processamento (1 segundo)
+    setTimeout(() => {
+        // Remove o estado de loading
+        btn.classList.remove('loading');
 
-	setTimeout(() => {
-		const id=parseInt(btn.dataset.id);
-		const nome=btn.dataset.nome;
-		const preco=parseFloat(btn.dataset.preco);
-		const modelo=btn.dataset.modelo;
-		
-		const itemExistente=carrinho.find(i=>i.id===id);
-		if(itemExistente){
-			itemExistente.quantidade++;
-		}else{
-			carrinho.push({id,nome,preco,quantidade:1,modelo});
-		}
-		renderizarCarrinho();
-		
-		// 1. Abrir a aba do carrinho (modal)
-		modalCarrinhoEl.style.display='block';
-		formularioPedidoEl.style.display='none';
-		btnIniciarPedidoEl.style.display='block';
+        // Lógica original de adicionar ao carrinho
+        const produtoId = parseInt(btn.getAttribute('data-id'));
+        const produtoNome = btn.getAttribute('data-nome');
+        const produtoPreco = parseFloat(btn.getAttribute('data-preco'));
+        const produtoModelo = btn.getAttribute('data-modelo');
 
-		// 2. Restaurar o botão
-		btn.classList.remove('loading');
-		btn.innerHTML = 'Adicionar ao Carrinho'; // Restaura o texto original
-		
-		// showNotification(`<i class="fas fa-check-circle"></i> ${nome} adicionado ao carrinho!`); // Removido o showNotification
-	}, 800); // Delay de 800ms para simular o carregamento
-}
-const id=parseInt(e.target.dataset.id);
+        const itemExistente = carrinho.find(item => item.id === produtoId);
+
+        if (itemExistente) {
+            itemExistente.quantidade++;
+        } else {
+            carrinho.push({
+                id: produtoId,
+                nome: produtoNome,
+                preco: produtoPreco,
+                modelo: produtoModelo,
+                quantidade: 1
+            });
+        }
+
+        // Salva no localStorage
+        localStorage.setItem('carrinhoMoura', JSON.stringify(carrinho));
+
+        // Atualiza a visualização do carrinho
+        renderizarCarrinho();
+
+        // 3. Abre o modal do carrinho diretamente
+        const modalCarrinhoEl = document.getElementById('modal-carrinho');
+        const formularioPedidoEl = document.getElementById('formulario-pedido');
+        const btnIniciarPedidoEl = document.getElementById('btn-iniciar-pedido');
+
+        modalCarrinhoEl.style.display = 'block';
+        formularioPedidoEl.style.display = 'none';
+        btnIniciarPedidoEl.style.display = 'block';
+
+    }, 1000); // Delay de 1 segundo
+}const id=parseInt(e.target.dataset.id);
 const nome=e.target.dataset.nome;
 const preco=parseFloat(e.target.dataset.preco);
 const modelo=e.target.dataset.modelo;
