@@ -1038,14 +1038,7 @@ function adicionarAoCarrinho(event) {
     }, 1000); // Delay de 1 segundo
 }
 
-const itemExistente=carrinho.find(i=>i.id===id);
-if(itemExistente){
-itemExistente.quantidade++;
-}else{
-carrinho.push({id,nome,preco,quantidade:1,modelo});
-}
-renderizarCarrinho();
-showNotification(`<i class="fas fa-check-circle"></i> ${nome} adicionado ao carrinho!`);
+
 }
 function removerDoCarrinho(e){
 const id=parseInt(e.target.dataset.id);
