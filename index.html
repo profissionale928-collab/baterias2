@@ -319,28 +319,28 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 .btn-adicionar{background-color:var(--cor-menu-hover);color:var(--branco);border:none;padding:10px 20px;border-radius:5px;cursor:pointer;font-weight:700;transition:background-color .3s}
 .btn-adicionar:hover{background-color:var(--azul-claro)}
 .btn-adicionar.loading {
-    background-color: #6c757d; /* Cor de loading */
-    cursor: not-allowed;
+    pointer-events: none; /* Desabilita cliques */
+    opacity: 0.8;
     position: relative;
     color: transparent !important; /* Esconde o texto */
-    pointer-events: none; /* Desabilita cliques */
 }
 .btn-adicionar.loading::after {
     content: "";
     position: absolute;
     top: 50%;
     left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
     width: 16px;
     height: 16px;
-    margin-top: -8px;
-    margin-left: -8px;
-    border: 2px solid #fff;
-    border-top-color: transparent;
+    border: 2px solid var(--branco);
     border-radius: 50%;
+    border-top-color: transparent;
     animation: spin 1s linear infinite;
 }
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 .modal{display:none;position:fixed;z-index:1001;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,.4)}
 .modal-content{background-color:var(--branco);margin:10% auto;padding:25px;border-radius:10px;width:90%;max-width:500px;position:relative;box-shadow:0 4px 12px rgba(0,0,0,.2)}
@@ -987,59 +987,37 @@ itensCarrinhoEl.querySelectorAll('.btn-remover').forEach(b=>b.addEventListener('
 valorTotalEl.textContent=`R$ ${total.toFixed(2).replace('.',',')}`;
 contadorCarrinhoEl.textContent=carrinho.reduce((a,i)=>a+i.quantidade,0);
 }
-
-function adicionarAoCarrinho(event) {
-    event.preventDefault();
-    const btn = event.currentTarget;
-    
-    // 1. Adiciona o estado de loading e desabilita o botão
-    btn.classList.add('loading');
-    
-    // 2. Simula o delay de processamento (1 segundo)
-    setTimeout(() => {
-        // Remove o estado de loading
-        btn.classList.remove('loading');
-
-        // Lógica original de adicionar ao carrinho
-        const produtoId = parseInt(btn.getAttribute('data-id'));
-        const produtoNome = btn.getAttribute('data-nome');
-        const produtoPreco = parseFloat(btn.getAttribute('data-preco'));
-        const produtoModelo = btn.getAttribute('data-modelo');
-
-        const itemExistente = carrinho.find(item => item.id === produtoId);
-
-        if (itemExistente) {
-            itemExistente.quantidade++;
-        } else {
-            carrinho.push({
-                id: produtoId,
-                nome: produtoNome,
-                preco: produtoPreco,
-                modelo: produtoModelo,
-                quantidade: 1
-            });
-        }
-
-        // Salva no localStorage
-        localStorage.setItem('carrinhoMoura', JSON.stringify(carrinho));
-
-        // Atualiza a visualização do carrinho
-        renderizarCarrinho();
-
-        // 3. Abre o modal do carrinho diretamente
-        const modalCarrinhoEl = document.getElementById('modal-carrinho');
-        const formularioPedidoEl = document.getElementById('formulario-pedido');
-        const btnIniciarPedidoEl = document.getElementById('btn-iniciar-pedido');
-
-        modalCarrinhoEl.style.display = 'block';
-        formularioPedidoEl.style.display = 'none';
-        btnIniciarPedidoEl.style.display = 'block';
-
-    }, 1000); // Delay de 1 segundo
-}
-
-
-}
+function adicionarAoCarrinho(e){
+	const botao = e.target.closest('.btn-adicionar');
+	if (!botao) return;
+	
+	// 1. Inicia o estado de carregamento
+	botao.classList.add('loading');
+	botao.textContent = ''; // Limpa o texto para mostrar o spinner
+	
+	// Simula o tempo de carregamento (1 segundo)
+	setTimeout(() => {
+	    const id=parseInt(botao.dataset.id);
+	    const nome=botao.dataset.nome;
+	    const preco=parseFloat(botao.dataset.preco);
+	    const modelo=botao.dataset.modelo;
+	
+	    const itemExistente=carrinho.find(i=>i.id===id);
+	    if(itemExistente){
+	        itemExistente.quantidade++;
+	    }else{
+	        carrinho.push({id,nome,preco,quantidade:1,modelo});
+	    }
+	    
+	    // 2. Finaliza o carregamento e atualiza o carrinho
+	    renderizarCarrinho();
+	    showNotification(`<i class="fas fa-check-circle"></i> ${nome} adicionado ao carrinho!`);
+	    
+	    // 3. Restaura o botão
+	    botao.classList.remove('loading');
+	    botao.textContent = 'Adicionar ao Carrinho';
+	}, 1000); // Simulação de 1 segundo de carregamento
+	}
 function removerDoCarrinho(e){
 const id=parseInt(e.target.dataset.id);
 const index=carrinho.findIndex(i=>i.id===id);
@@ -1115,7 +1093,7 @@ function abrirDetalhesProdutoModal(produtoId) {
             <h5 style="color: var(--azul-principal); margin-bottom: 10px;">Descrição Detalhada:</h5>
             <p style="margin-bottom: 20px; line-height: 1.5; font-size: 0.95em;">${produto.descricaoCompleta}</p>
             
-            <button class="btn-adicionar" data-id="${produto.id}" data-nome="${produto.nome}" data-preco="${produto.preco}" data-modelo="${produto.modelo}" style="margin-top: 10px;" onclick="adicionarAoCarrinho(event); fecharDetalhesProdutoModal();">
+            <button class="btn-adicionar" data-id="${produto.id}" data-nome="${produto.nome}" data-preco="${produto.preco}" data-modelo="${produto.modelo}" style="margin-top: 10px;" onclick="adicionarAoCarrinho(event); setTimeout(() => fecharDetalhesProdutoModal(), 1000);">
                 <i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho
             </button>
         `;
