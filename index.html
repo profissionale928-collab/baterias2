@@ -838,11 +838,33 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	<div id="itens-carrinho">
 	<p id="carrinho-vazio" class="texto-centralizado">O carrinho está vazio.</p>
 	</div>
-<div class="aviso-pagamento-entrega" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; text-align: center;">
-				<i class="fas fa-handshake" style="font-size: 1.5em; color: var(--azul-principal); margin-bottom: 5px;"></i>
-				<h5 style="color: var(--azul-principal); margin-bottom: 5px;">Pagamento Apenas na Entrega</h5>
-				<p style="font-size: 0.9em; color: #333; margin: 0;">Seu pedido será finalizado via WhatsApp. O pagamento será realizado *somente após a entrega* e confirmação do produto. Garantia de satisfação e segurança!</p>
-			</div>
+	<!-- <div id="calculo-frete-area" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+	    <h5>Calcular Frete e Opções de Envio</h5>
+	    <div style="display: flex; gap: 10px; margin-top: 10px;">
+	        <input type="text" id="campo-cep" placeholder="CEP (apenas números)" maxlength="8" style="flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em;">
+	        <button id="btn-calcular-frete" class="btn-azul-escuro" style="width: auto; padding: 10px 15px; margin-top: 0;">Calcular</button>
+	    </div>
+	    <p id="endereco-info" style="margin-top: 5px; font-size: 0.9em; color: #666; min-height: 1.2em;"></p>
+	    <div id="opcoes-frete" style="margin-top: 10px; display: none;">
+	        <label class="opcao-frete-label">
+	            <input type="radio" name="opcao-frete" value="39.00" data-descricao="Envio" data-prazo="Amanhã">
+	            <span>Envio (R$ 39,00) - Entrega: Amanhã</span>
+	        </label>
+	        <label class="opcao-frete-label">
+	            <input type="radio" name="opcao-frete" value="55.00" data-descricao="Envio + Instalação" data-prazo="Amanhã">
+	            <span>Envio + Instalação (R$ 55,00) - Entrega: Amanhã</span>
+	        </label>
+	    </div>
+	    <p id="frete-status" style="margin-top: 10px; font-weight: 600; color: var(--vermelho-preco);"></p>
+	</div> -->
+<div id="pagamento-entrega-area" style="margin-top: 15px; padding: 15px; border: 2px solid var(--verde-whatsapp); border-radius: 8px; background-color: #e6ffe6; text-align: center;">
+	    <p style="font-weight: 700; color: var(--verde-whatsapp); font-size: 1.1em;">
+	        <i class="fas fa-truck"></i> PAGAMENTO APENAS APÓS A ENTREGA
+	    </p>
+	    <p style="font-size: 0.9em; color: #333;">
+	        O valor total será confirmado e pago no momento da entrega e/ou instalação.
+	    </p>
+	</div>
 
 	<div class="resumo-total">
 	<strong>Total:</strong> <span id="valor-total">R$ 0,00</span>
@@ -938,7 +960,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	]
 	
 	let carrinho=[];
-	// let freteSelecionado = null; // Frete removido
+	let freteSelecionado = { valor: 0, descricao: 'Pagamento na entrega' }; // Variável global para armazenar a opção de frete selecionada
 	const listaProdutosEl=document.getElementById('lista-produtos');
 	const contadorCarrinhoEl=document.getElementById('contador-carrinho');
 	const modalCarrinhoEl=document.getElementById('modal-carrinho');
@@ -991,19 +1013,13 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	<p>Tipo: ${p.modelo}</p>
 	<p class="preco">R$ ${p.preco.toFixed(2).replace('.',',')}</p>
 	<button class="btn-adicionar" data-id="${p.id}" data-nome="${p.nome}" data-preco="${p.preco}" data-modelo="${p.modelo}">
-	Ver Mais
+	Adicionar ao Carrinho
 	</button>
 	</div>
 	`).join('');
-	document.querySelectorAll('.btn-adicionar').forEach(b => {
-            if (b.classList.contains('btn-ver-mais')) {
-                b.addEventListener('click', mostrarDetalhesProduto);
-            } else {
-                b.addEventListener('click', adicionarAoCarrinho);
-            }
-        });
+	document.querySelectorAll('.btn-adicionar').forEach(b=>b.addEventListener('click',adicionarAoCarrinho));
 	// Re-adiciona o listener para o modal de detalhes após carregar os produtos
-	
+	adicionarListenersDetalheProduto();
 	}
 	
 	
@@ -1085,7 +1101,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 		});
 		itensCarrinhoEl.querySelectorAll('.btn-remover').forEach(b=>b.addEventListener('click',removerDoCarrinho));
 	}
-	valorTotalEl.textContent=`R$ ${total.toFixed(2).replace('.','')}`;;
+	vvalorTotalEl.textContent=`R$ ${total.toFixed(2).replace('.','')}`;
 	contadorCarrinhoEl.textContent=carrinho.reduce((a,i)=>a+i.quantidade,0);
 	}
 	function adicionarAoCarrinho(e){
@@ -1099,12 +1115,6 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 		// Simula o tempo de carregamento (1 segundo)
 		setTimeout(() => {
 		    const id=parseInt(botao.dataset.id);
-				    // Se for o botão "Ver Mais", não adiciona ao carrinho
-				    if(botao.classList.contains('btn-ver-mais')) {
-				        botao.classList.remove('loading');
-				        botao.textContent = 'Ver Mais';
-				        return;
-				    }
 			    const itemProduto = catalogoPecas.find(p => p.id === id);
 			    if (!itemProduto) return; // Garante que o produto existe
 		    const nome=botao.dataset.nome;
@@ -1129,33 +1139,10 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 		    
 		    // 3. Restaura o botão
 		    botao.classList.remove('loading');
-		    botao.textContent = 'Ver Mais';
+		    botao.textContent = 'Adicionar ao Carrinho';
 		}, 1000); // Simulação de 1 segundo de carregamento
 		}
-	function mostrarDetalhesProduto(e) {
-		    e.stopPropagation();
-		    const id = parseInt(e.currentTarget.dataset.id);
-		    const produto = catalogoPecas.find(p => p.id === id);
-		    if (!produto) return;
-
-		    const modalBody = document.getElementById('detalhes-produto-body');
-		    modalBody.innerHTML = `
-		        <img src="${produto.imagem_url}" alt="${produto.nome}" style="width: 100%; max-height: 250px; object-fit: contain; margin-bottom: 15px;">
-		        <h4>${produto.nome}</h4>
-		        <p>${produto.descricaoCompleta}</p>
-		        <p class="preco">R$ ${produto.preco.toFixed(2).replace('.', ',')}</p>
-		    `;
-
-		    const modal = document.getElementById('detalhes-produto-modal');
-		    modal.style.display = 'block';
-		}
-
-		function fecharDetalhesProdutoModal() {
-		    const modal = document.getElementById('detalhes-produto-modal');
-		    modal.style.display = 'none';
-		}
-
-		function removerDoCarrinho(e){
+	function removerDoCarrinho(e){
 	const id=parseInt(e.target.dataset.id);
 	const index=carrinho.findIndex(i=>i.id===id);
 	if(index!==-1){
@@ -1172,7 +1159,11 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	const clienteNome=document.getElementById('campo-nome').value.trim();
 	const clienteWhatsapp=document.getElementById('campo-whatsapp').value.replace(/[^0-9]/g,'');
 	
-// Frete removido: Não é mais necessário verificar freteSelecionado.
+	if (false) {
+	    mensagemStatusEl.style.color='red';
+	    mensagemStatusEl.textContent='Por favor, calcule o frete e selecione uma opção de envio.';
+	    return;
+	}
 	
 	if(!clienteNome||clienteWhatsapp.length<10){
 	mensagemStatusEl.style.color='red';
@@ -1180,8 +1171,8 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	return;
 	}
 	const valorTotalItens=carrinho.reduce((a,i)=>a+(i.preco*i.quantidade),0);
-	const valorFrete = 0; // Frete removido
-	const valorTotal = valorTotalItens; // Frete removido
+	const valorFrete = 0;
+	const valorTotal = valorTotalItens;
 	const itensMensagem=carrinho.map((i,idx)=>
 	`*${idx+1}.* ${i.nome} (${i.modelo})\n    *Qtde:* ${i.quantidade} | *Subtotal:* R$ ${(i.preco*i.quantidade).toFixed(2).replace('.',',')}`
 	).join('\n');
@@ -1190,10 +1181,10 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	`*Cliente:* ${clienteNome}\n`+
 	`*WhatsApp:* ${clienteWhatsapp}\n\n`+
 	`*ITENS DO PEDIDO:*\n${itensMensagem}\n\n`+
-	// Frete removido: Linhas de frete e endereço de entrega removidas da mensagem do WhatsApp.
-	`*TOTAL GERAL ESTIMADO:* R$ ${valorTotal.toFixed(2).replace('.','')}\n\n`+
-		`*PAGAMENTO:* O pagamento será realizado *apenas após a entrega* e confirmação do produto. Garantia de satisfação e segurança!\n\n`++
-	`*Atenção:* Por favor, confirme o estoque e o valor para o cliente.`
+	
+	`*Endereço de Entrega:* ${document.getElementById('endereco-info').textContent}\n\n`+
+	`*TOTAL GERAL E`*Total:* R$ ${valorTotal.toFixed(2).replace('.',',')}\n\n`+
+	`*Atenção:* Por favor, confirme o estoque e o valor para o cliente. O pagamento será feito apenas após a entrega.`
 	);
 	const numeroAtendente='5511960720059';
 	const linkWhatsApp=`https://api.whatsapp.com/send?phone=${numeroAtendente}&text=${mensagemWhatsapp}`;
@@ -1238,7 +1229,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	            <p style="margin-bottom: 20px; line-height: 1.5; font-size: 0.95em;">${produto.descricaoCompleta}</p>
 	            
 	            <button class="btn-adicionar" data-id="${produto.id}" data-nome="${produto.nome}" data-preco="${produto.preco}" data-modelo="${produto.modelo}" style="margin-top: 10px;" onclick="adicionarAoCarrinho(event); setTimeout(() => fecharDetalhesProdutoModal(), 1000);">
-	                <i class="fas fa-shopping-cart"></i> Ver Mais
+	                <i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho
 	            </button>
 	        `;
 	
@@ -1272,7 +1263,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	}
 	
 	function handleCardClick(event) {
-	    // Verifica se o clique não foi no botão "Ver Mais"
+	    // Verifica se o clique não foi no botão "Adicionar ao Carrinho"
 	    if (!event.target.classList.contains('btn-adicionar') && !event.target.closest('.btn-adicionar')) {
 	        const produtoId = parseInt(this.getAttribute('data-id'));
 	        if (!isNaN(produtoId)) {
@@ -1285,7 +1276,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	
 	// --- INÍCIO: Lógica de Cálculo de Frete ---
 	const campoCep = document.getElementById('campo-cep');
-	const btnCalcularFrete = document.getElementById('btn-calcular-frete');
+	/* const btnCalcularFrete = document.getElementById('btn-calcular-frete');
 	const enderecoInfo = document.getElementById('endereco-info');
 	const opcoesFreteDiv = document.getElementById('opcoes-frete');
 	const freteStatus = document.getElementById('frete-status');
@@ -1342,7 +1333,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	        btnCalcularFrete.textContent = 'Calcular';
 	        // Não chama renderizarCarrinho() aqui, pois a seleção do frete fará isso
 	        // Apenas atualiza o total para refletir o valor do carrinho sem frete, caso a busca falhe
-	        if (!freteSelecionado) {
+	        if (false) {
 	            valorTotalEl.textContent=`R$ ${carrinho.reduce((a,i)=>a+(i.preco*i.quantidade),0).toFixed(2).replace('.',',')}`;
 	        }
 	    }
@@ -1367,8 +1358,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	// --- FIM: Lógica de Cálculo de Frete ---
 	
 	// Inicialização de Listeners
-	document.getElementById('abrir-carrinho').addEventListener('click',()=>{
-	renderizarCarrinho(); // Garante que o carrinho está atualizado antes de abrir
+	document.getElementById('modal-carrinho').addEventListener('change', (e) => { */derizarCarrinho(); // Garante que o carrinho está atualizado antes de abrir
 	modalCarrinhoEl.style.display='block';
 	formularioPedidoEl.style.display='none';
 	btnIniciarPedidoEl.style.display='block';
@@ -1383,7 +1373,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	});
 	btnIniciarPedidoEl.addEventListener('click',()=>{
 	if(carrinho.length>0){
-	    if (!freteSelecionado) {
+	    if (false) {
 	        document.getElementById('frete-status').textContent = 'Por favor, calcule o frete e selecione uma opção de envio.';
 	        return;
 	    }
