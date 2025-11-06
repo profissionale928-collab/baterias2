@@ -838,25 +838,11 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	<div id="itens-carrinho">
 	<p id="carrinho-vazio" class="texto-centralizado">O carrinho está vazio.</p>
 	</div>
-	<div id="calculo-frete-area" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-	    <h5>Calcular Frete e Opções de Envio</h5>
-	    <div style="display: flex; gap: 10px; margin-top: 10px;">
-	        <input type="text" id="campo-cep" placeholder="CEP (apenas números)" maxlength="8" style="flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em;">
-	        <button id="btn-calcular-frete" class="btn-azul-escuro" style="width: auto; padding: 10px 15px; margin-top: 0;">Calcular</button>
-	    </div>
-	    <p id="endereco-info" style="margin-top: 5px; font-size: 0.9em; color: #666; min-height: 1.2em;"></p>
-	    <div id="opcoes-frete" style="margin-top: 10px; display: none;">
-	        <label class="opcao-frete-label">
-	            <input type="radio" name="opcao-frete" value="39.00" data-descricao="Envio" data-prazo="Amanhã">
-	            <span>Envio (R$ 39,00) - Entrega: Amanhã</span>
-	        </label>
-	        <label class="opcao-frete-label">
-	            <input type="radio" name="opcao-frete" value="55.00" data-descricao="Envio + Instalação" data-prazo="Amanhã">
-	            <span>Envio + Instalação (R$ 55,00) - Entrega: Amanhã</span>
-	        </label>
-	    </div>
-	    <p id="frete-status" style="margin-top: 10px; font-weight: 600; color: var(--vermelho-preco);"></p>
-	</div>
+<div class="aviso-pagamento-entrega" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; text-align: center;">
+				<i class="fas fa-handshake" style="font-size: 1.5em; color: var(--azul-principal); margin-bottom: 5px;"></i>
+				<h5 style="color: var(--azul-principal); margin-bottom: 5px;">Pagamento Apenas na Entrega</h5>
+				<p style="font-size: 0.9em; color: #333; margin: 0;">Seu pedido será finalizado via WhatsApp. O pagamento será realizado *somente após a entrega* e confirmação do produto. Garantia de satisfação e segurança!</p>
+			</div>
 
 	<div class="resumo-total">
 	<strong>Total:</strong> <span id="valor-total">R$ 0,00</span>
@@ -952,7 +938,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	]
 	
 	let carrinho=[];
-	let freteSelecionado = null; // Variável global para armazenar a opção de frete selecionada
+	// let freteSelecionado = null; // Frete removido
 	const listaProdutosEl=document.getElementById('lista-produtos');
 	const contadorCarrinhoEl=document.getElementById('contador-carrinho');
 	const modalCarrinhoEl=document.getElementById('modal-carrinho');
@@ -1099,7 +1085,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 		});
 		itensCarrinhoEl.querySelectorAll('.btn-remover').forEach(b=>b.addEventListener('click',removerDoCarrinho));
 	}
-	valorTotalEl.textContent=`R$ ${(total + (freteSelecionado ? parseFloat(freteSelecionado.valor) : 0)).toFixed(2).replace('.',',')}`;
+	valorTotalEl.textContent=`R$ ${total.toFixed(2).replace('.','')}`;;
 	contadorCarrinhoEl.textContent=carrinho.reduce((a,i)=>a+i.quantidade,0);
 	}
 	function adicionarAoCarrinho(e){
@@ -1186,11 +1172,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	const clienteNome=document.getElementById('campo-nome').value.trim();
 	const clienteWhatsapp=document.getElementById('campo-whatsapp').value.replace(/[^0-9]/g,'');
 	
-	if (!freteSelecionado) {
-	    mensagemStatusEl.style.color='red';
-	    mensagemStatusEl.textContent='Por favor, calcule o frete e selecione uma opção de envio.';
-	    return;
-	}
+// Frete removido: Não é mais necessário verificar freteSelecionado.
 	
 	if(!clienteNome||clienteWhatsapp.length<10){
 	mensagemStatusEl.style.color='red';
@@ -1198,8 +1180,8 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	return;
 	}
 	const valorTotalItens=carrinho.reduce((a,i)=>a+(i.preco*i.quantidade),0);
-	const valorFrete = freteSelecionado ? parseFloat(freteSelecionado.valor) : 0;
-	const valorTotal = valorTotalItens + valorFrete;
+	const valorFrete = 0; // Frete removido
+	const valorTotal = valorTotalItens; // Frete removido
 	const itensMensagem=carrinho.map((i,idx)=>
 	`*${idx+1}.* ${i.nome} (${i.modelo})\n    *Qtde:* ${i.quantidade} | *Subtotal:* R$ ${(i.preco*i.quantidade).toFixed(2).replace('.',',')}`
 	).join('\n');
@@ -1208,10 +1190,10 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	`*Cliente:* ${clienteNome}\n`+
 	`*WhatsApp:* ${clienteWhatsapp}\n\n`+
 	`*ITENS DO PEDIDO:*\n${itensMensagem}\n\n`+
-	`*Frete Selecionado:* ${freteSelecionado.descricao} (R$ ${valorFrete.toFixed(2).replace('.',',')})\n`+
-	`*Endereço de Entrega:* ${document.getElementById('endereco-info').textContent}\n\n`+
-	`*TOTAL GERAL ESTIMADO:* R$ ${valorTotal.toFixed(2).replace('.',',')}\n\n`+
-	`*Atenção:* Por favor, confirme o estoque, o valor e calcule o frete para o cliente.`
+	// Frete removido: Linhas de frete e endereço de entrega removidas da mensagem do WhatsApp.
+	`*TOTAL GERAL ESTIMADO:* R$ ${valorTotal.toFixed(2).replace('.','')}\n\n`+
+		`*PAGAMENTO:* O pagamento será realizado *apenas após a entrega* e confirmação do produto. Garantia de satisfação e segurança!\n\n`++
+	`*Atenção:* Por favor, confirme o estoque e o valor para o cliente.`
 	);
 	const numeroAtendente='5511960720059';
 	const linkWhatsApp=`https://api.whatsapp.com/send?phone=${numeroAtendente}&text=${mensagemWhatsapp}`;
