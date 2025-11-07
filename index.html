@@ -801,18 +801,10 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 <div class="resumo-total">
 <strong>Total:</strong> <span id="valor-total">R$ 0,00</span>
 </div>
-<div id="formulario-pedido" class="formulario-pedido" style="display:none;">
-<h5>Detalhes para Envio do Pedido via WhatsApp</h5>
-<input type="text" id="campo-nome" placeholder="Seu Nome Completo" required>
-<input type="tel" id="campo-whatsapp" placeholder="Seu WhatsApp (apenas números)" required>
-<button id="finalizar-whatsapp" class="btn-whatsapp-finalizar">
-<i class="fab fa-whatsapp"></i> Enviar Pedido para Atendente
-</button>
-<p id="mensagem-status" class="mensagem-status"></p>
-</div>
-<button id="btn-iniciar-pedido" class="btn-azul-escuro" style="margin-top:15px;">
-Finalizar Pedido
-</button>
+
+<button id="finalizar-whatsapp" class="btn-azul-escuro" style="margin-top:15px;">
+	Finalizar Pedido
+	</button>
 </div>
 </div>
 
@@ -898,10 +890,10 @@ const modalCarrinhoEl=document.getElementById('modal-carrinho');
 const itensCarrinhoEl=document.getElementById('itens-carrinho');
 const valorTotalEl=document.getElementById('valor-total');
 const carrinhoVazioEl=document.getElementById('carrinho-vazio');
-const formularioPedidoEl=document.getElementById('formulario-pedido');
-const btnIniciarPedidoEl=document.getElementById('btn-iniciar-pedido');
+
+
 const btnFinalizarWhatsAppEl=document.getElementById('finalizar-whatsapp');
-const mensagemStatusEl=document.getElementById('mensagem-status');
+
 const notificationSnackbarEl=document.getElementById('notification-snackbar');
 const searchInputEl = document.getElementById('search-input'); 
 const bannerSliderEl = document.getElementById('banner-slider'); 
@@ -993,10 +985,10 @@ itensCarrinhoEl.innerHTML='';
 let total=0;
 if(carrinho.length===0){
 carrinhoVazioEl.style.display='block';
-btnIniciarPedidoEl.disabled=true;
+
 }else{
 carrinhoVazioEl.style.display='none';
-btnIniciarPedidoEl.disabled=false;
+
 carrinho.forEach(item=>{
 const subtotal=item.preco*item.quantidade;
 total+=subtotal;
@@ -1046,10 +1038,8 @@ function adicionarAoCarrinho(e){
 		    renderizarCarrinho();
 		    // showNotification(`<i class="fas fa-check-circle"></i> ${nome} adicionado ao carrinho!`); // Linha removida/comentada conforme solicitado
 		    
-		    // NOVO: Abre o modal do carrinho automaticamente
-		    modalCarrinhoEl.style.display='block';
-		    formularioPedidoEl.style.display='none';
-		    btnIniciarPedidoEl.style.display='block';
+// NOVO: Abre o modal do carrinho automaticamente
+			    modalCarrinhoEl.style.display='block';
 	    
 	    // 3. Restaura o botão
 	    botao.classList.remove('loading');
@@ -1159,11 +1149,9 @@ function handleCardClick(event) {
 
 
 // Inicialização de Listeners
-document.getElementById('abrir-carrinho').addEventListener('click',()=>{
-modalCarrinhoEl.style.display='block';
-formularioPedidoEl.style.display='none';
-btnIniciarPedidoEl.style.display='block';
-});
+	document.getElementById('abrir-carrinho').addEventListener('click',()=>{
+	modalCarrinhoEl.style.display='block';
+	});
 document.querySelector('.fechar-modal').addEventListener('click',()=>{
 modalCarrinhoEl.style.display='none';
 });
@@ -1172,15 +1160,7 @@ if(e.target===modalCarrinhoEl){
 modalCarrinhoEl.style.display='none';
 }
 });
-btnIniciarPedidoEl.addEventListener('click',()=>{
-if(carrinho.length>0){
-formularioPedidoEl.style.display='block';
-btnIniciarPedidoEl.style.display='none';
-mensagemStatusEl.textContent='';
-}else{
-alert('Seu carrinho está vazio. Adicione baterias primeiro!');
-}
-});
+
 btnFinalizarWhatsAppEl.addEventListener('click',finalizarPedido);
 searchInputEl.addEventListener('keyup', () => filterProducts(searchInputEl.value)); 
 
