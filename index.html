@@ -1220,6 +1220,8 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	renderizarCarrinho();
 		}
 function finalizarPedido(e){
+    e.preventDefault(); // Garante que o comportamento padrão do botão (se estiver em um form) seja cancelado.
+    console.log('Finalizar Pedido acionado.');
 		
 		// 1. Verifica se o carrinho está vazio antes de tentar finalizar
 		if (carrinho.length === 0) {
@@ -1236,6 +1238,7 @@ function finalizarPedido(e){
 		window.location.href = `${linkDestino}?carrinho=${dadosCarrinho}`;
 		
 		// O código abaixo não será executado devido ao redirecionamento, mas é mantido para clareza
+    console.log('Redirecionando para:', `${linkDestino}?carrinho=${dadosCarrinho}`);
 		mensagemStatusEl.style.color='green';
 mensagemStatusEl.textContent='Redirecionando para a página de finalização...';
 			carrinho=[];
