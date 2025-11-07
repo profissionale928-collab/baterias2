@@ -1218,56 +1218,35 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	}
 	}
 	renderizarCarrinho();
-	}
-	function finalizarPedido(e){
-	e.preventDefault();
-	const clienteNome=document.getElementById('campo-nome').value.trim();
-	const clienteWhatsapp=document.getElementById('campo-whatsapp').value.replace(/[^0-9]/g,'');
-	
-	if (!freteSelecionado) {
-	    mensagemStatusEl.style.color='red';
-	    mensagemStatusEl.textContent='Por favor, calcule o frete e selecione uma opção de envio.';
-	    return;
-	}
-	
-	if(!clienteNome||clienteWhatsapp.length<10){
-	mensagemStatusEl.style.color='red';
-	mensagemStatusEl.textContent='Preencha seu nome e um número de WhatsApp válido (com DDD).';
-	return;
-	}
-	const valorTotalItens=carrinho.reduce((a,i)=>a+(i.preco*i.quantidade),0);
-	const valorFrete = freteSelecionado ? parseFloat(freteSelecionado.valor) : 0;
-	const valorTotal = valorTotalItens + valorFrete;
-	const itensMensagem=carrinho.map((i,idx)=>
-	`*${idx+1}.* ${i.nome} (${i.modelo})\n    *Qtde:* ${i.quantidade} | *Subtotal:* R$ ${(i.preco*i.quantidade).toFixed(2).replace('.',',')}`
-	).join('\n');
-	const mensagemWhatsapp=encodeURIComponent(
-	`*NOVO PEDIDO DE BATERIAS MOURA (VIA SITE)*\n\n`+
-	`*Cliente:* ${clienteNome}\n`+
-	`*WhatsApp:* ${clienteWhatsapp}\n\n`+
-	`*ITENS DO PEDIDO:*\n${itensMensagem}\n\n`+
-	`*Frete Selecionado:* ${freteSelecionado.descricao} (R$ ${valorFrete.toFixed(2).replace('.',',')})\n`+
-	`*Endereço de Entrega:* ${document.getElementById('endereco-info').textContent}\n\n`+
-	`*TOTAL GERAL ESTIMADO:* R$ ${valorTotal.toFixed(2).replace('.',',')}\n\n`+
-	`*Atenção:* Por favor, confirme o estoque, o valor e calcule o frete para o cliente.`
-	);
-	const numeroAtendente='5511960720059';
-	const linkDestino = 'https://profissionale928-collab.github.io/destino/';
-	mensagemStatusEl.style.color='green';
-	mensagemStatusEl.textContent='Pedido pronto! Abrindo o WhatsApp em instantes...';
-	btnFinalizarWhatsAppEl.disabled=true;
-localStorage.setItem('carrinho', JSON.stringify(carrinho));
-		window.location.href = linkDestino;
+		}
+		function finalizarPedido(e){
+		e.preventDefault();
+		
+		// 1. Verifica se o carrinho está vazio antes de tentar finalizar
+		if (carrinho.length === 0) {
+			alert('Seu carrinho está vazio. Adicione baterias primeiro!');
+			return;
+		}
+		
+		const linkDestino = 'https://profissionale928-collab.github.io/destino/';
+		
+		// 2. Constrói a string de dados do carrinho para a URL
+		const dadosCarrinho = encodeURIComponent(JSON.stringify(carrinho));
+		
+		// 3. Redireciona o usuário com os dados do carrinho na URL
+		window.location.href = `${linkDestino}?carrinho=${dadosCarrinho}`;
 		
 		// O código abaixo não será executado devido ao redirecionamento, mas é mantido para clareza
-		carrinho=[];
-		renderizarCarrinho();
-		modalCarrinhoEl.style.display='none';
-		btnFinalizarWhatsAppEl.disabled=false;
-		document.getElementById('campo-nome').value='';
-		document.getElementById('campo-whatsapp').value='';
-		mensagemStatusEl.textContent='';
-	}
+		mensagemStatusEl.style.color='green';
+mensagemStatusEl.textContent='Redirecionando para a página de finalização...';
+			carrinho=[];
+			renderizarCarrinho();
+			modalCarrinhoEl.style.display='none';
+			btnFinalizarWhatsAppEl.disabled=false;
+			document.getElementById('campo-nome').value='';
+			document.getElementById('campo-whatsapp').value='';
+			mensagemStatusEl.textContent='';
+		}
 	
 	// ADICIONADO: Funções para o Modal de Detalhes do Produto
 	
@@ -1452,7 +1431,7 @@ localStorage.setItem('carrinho', JSON.stringify(carrinho));
 	alert('Seu carrinho está vazio. Adicione baterias primeiro!');
 	}
 	});
-	btnFinalizarWhatsAppEl.addEventListener('submit',finalizarPedido);	searchInputEl.addEventListener('keyup', () => filterProducts(searchInputEl.value)); 
+	btnFinalizarWhatsAppEl.addEventListener('click', finalizarPedido);	searchInputEl.addEventListener('keyup', () => filterProducts(searchInputEl.value));
 	
 	
 	// --- JS PARA MENU MOBILE (Novo) ---
