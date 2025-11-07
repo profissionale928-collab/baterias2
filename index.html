@@ -1419,20 +1419,15 @@ mensagemStatusEl.textContent='Redirecionando para a página de finalização...'
 	modalCarrinhoEl.style.display='none';
 	}
 	});
-	btnIniciarPedidoEl.addEventListener('click',()=>{
-	if(carrinho.length>0){
-	    if (!freteSelecionado) {
-	        document.getElementById('frete-status').textContent = 'Por favor, calcule o frete e selecione uma opção de envio.';
-	        return;
-	    }
-	    document.getElementById('frete-status').textContent = ''; // Limpa a mensagem de erro
-	formularioPedidoEl.style.display='block';
-	btnIniciarPedidoEl.style.display='none';
-	mensagemStatusEl.textContent='';
-	}else{
-	alert('Seu carrinho está vazio. Adicione baterias primeiro!');
-	}
-	});
+btnIniciarPedidoEl.addEventListener('click', (e) => {
+		    // Adiciona a verificação de frete antes de finalizar, se necessário
+		    if (carrinho.length > 0 && !freteSelecionado) {
+		        document.getElementById('frete-status').textContent = 'Por favor, calcule o frete e selecione uma opção de envio.';
+		        return;
+		    }
+		    // Chama a função de finalização do pedido, que fará o redirecionamento
+		    finalizarPedido(e);
+		});
 	btnFinalizarWhatsAppEl.addEventListener('click', finalizarPedido);	searchInputEl.addEventListener('keyup', () => filterProducts(searchInputEl.value));
 	
 	
