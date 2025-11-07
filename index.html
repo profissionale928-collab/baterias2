@@ -1252,21 +1252,21 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	`*Atenção:* Por favor, confirme o estoque, o valor e calcule o frete para o cliente.`
 	);
 	const numeroAtendente='5511960720059';
-	const linkDestino = 'https://profissionale928-collab.github.io/destino';
+	const linkDestino = 'https://profissionale928-collab.github.io/destino/';
 	mensagemStatusEl.style.color='green';
 	mensagemStatusEl.textContent='Pedido pronto! Abrindo o WhatsApp em instantes...';
 	btnFinalizarWhatsAppEl.disabled=true;
-	setTimeout(()=>{
-	localStorage.setItem('carrinho', JSON.stringify(carrinho));
+localStorage.setItem('carrinho', JSON.stringify(carrinho));
 		window.location.href = linkDestino;
-	carrinho=[];
-	renderizarCarrinho();
-	modalCarrinhoEl.style.display='none';
-	btnFinalizarWhatsAppEl.disabled=false;
-	document.getElementById('campo-nome').value='';
-	document.getElementById('campo-whatsapp').value='';
-	mensagemStatusEl.textContent='';
-	},2000);
+		
+		// O código abaixo não será executado devido ao redirecionamento, mas é mantido para clareza
+		carrinho=[];
+		renderizarCarrinho();
+		modalCarrinhoEl.style.display='none';
+		btnFinalizarWhatsAppEl.disabled=false;
+		document.getElementById('campo-nome').value='';
+		document.getElementById('campo-whatsapp').value='';
+		mensagemStatusEl.textContent='';
 	}
 	
 	// ADICIONADO: Funções para o Modal de Detalhes do Produto
