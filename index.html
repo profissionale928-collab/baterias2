@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -303,6 +304,68 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
     object-position: center;
 }
 /* --- FIM ESTILO DO MINI-BANNER --- */
+
+/* --- ESTILO DO BLOCO DE PAGAMENTO SELECIONÁVEL --- */
+.payment-option-block {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--branco);
+    font-weight: 600;
+    color: #333;
+}
+
+.payment-option-block:hover {
+    border-color: var(--azul-claro);
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.payment-option-block input[type="radio"] {
+    margin-right: 15px;
+    /* Estilização básica do radio button */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #999;
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.payment-option-block input[type="radio"]:checked {
+    border-color: var(--azul-principal);
+    background-color: var(--azul-principal);
+}
+
+.payment-option-block input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--branco);
+}
+
+.payment-option-block:has(input[type="radio"]:checked) {
+    border-color: var(--azul-principal);
+    box-shadow: 0 0 8px rgba(0, 74, 153, 0.5);
+    background-color: #e6f0ff; /* Fundo levemente azul para seleção */
+}
+
+/* --- FIM ESTILO DO BLOCO DE PAGAMENTO SELECIONÁVEL --- */
 
 
 .produtos-destaque{padding:40px 0}
@@ -860,9 +923,9 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 
 	<div id="opcoes-pagamento-area" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
 		    <h5>Opção de Pagamento</h5>
-		    <label class="opcao-pagamento-label">
+		    <label class="opcao-pagamento-label payment-option-block">
 		        <input type="radio" name="opcao-pagamento" value="pagamento-entrega" checked>
-		        <span>Pagamento após a entrega</span>
+		        Pagamento após a entrega
 		    </label>
 		</div>
 		<div class="resumo-total">
@@ -1156,7 +1219,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	}
 	renderizarCarrinho();
 	}
-	function finalizarPedidoWhatsApp(e){
+	function finalizarPedido(e){
 	e.preventDefault();
 	const clienteNome=document.getElementById('campo-nome').value.trim();
 	const clienteWhatsapp=document.getElementById('campo-whatsapp').value.replace(/[^0-9]/g,'');
@@ -1189,12 +1252,13 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	`*Atenção:* Por favor, confirme o estoque, o valor e calcule o frete para o cliente.`
 	);
 	const numeroAtendente='5511960720059';
-	const linkWhatsApp=`https://api.whatsapp.com/send?phone=${numeroAtendente}&text=${mensagemWhatsapp}`;
+	const linkDestino = 'pagina_destino.html';
 	mensagemStatusEl.style.color='green';
 	mensagemStatusEl.textContent='Pedido pronto! Abrindo o WhatsApp em instantes...';
 	btnFinalizarWhatsAppEl.disabled=true;
 	setTimeout(()=>{
-	window.open(linkWhatsApp,'_blank');
+	localStorage.setItem('carrinho', JSON.stringify(carrinho));
+		window.location.href = linkDestino;
 	carrinho=[];
 	renderizarCarrinho();
 	modalCarrinhoEl.style.display='none';
@@ -1388,8 +1452,7 @@ body{background-color:var(--cinza-fundo);line-height:1.6}
 	alert('Seu carrinho está vazio. Adicione baterias primeiro!');
 	}
 	});
-	btnFinalizarWhatsAppEl.addEventListener('click',finalizarPedidoWhatsApp);
-	searchInputEl.addEventListener('keyup', () => filterProducts(searchInputEl.value)); 
+	btnFinalizarWhatsAppEl.addEventListener('submit',finalizarPedido);	searchInputEl.addEventListener('keyup', () => filterProducts(searchInputEl.value)); 
 	
 	
 	// --- JS PARA MENU MOBILE (Novo) ---
